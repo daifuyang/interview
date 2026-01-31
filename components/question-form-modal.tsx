@@ -183,6 +183,7 @@ export function QuestionFormModal({
               content={content}
               onChange={setContent}
               placeholder="输入题目描述..."
+              className="h-[200px]"
             />
           </div>
 
@@ -192,6 +193,7 @@ export function QuestionFormModal({
               content={answer}
               onChange={setAnswer}
               placeholder="输入参考答案..."
+              className="h-[200px]"
             />
           </div>
 

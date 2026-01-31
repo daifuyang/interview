@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { toast } from "sonner";
 import { Header } from "@/components/header";
 import { CategoryNav } from "@/components/category-nav";
 import { SearchFilter } from "@/components/search-filter";
@@ -114,13 +115,13 @@ export default function Home() {
   };
 
   const handleDeleteQuestion = async (id: string) => {
-    if (!confirm("确定要删除这道题吗？")) return;
     try {
       await deleteQuestion(id, adminToken);
+      toast.success("题目删除成功");
       loadQuestions();
     } catch (error) {
       console.error("Failed to delete question:", error);
-      alert("删除失败");
+      toast.error("删除失败");
     }
   };
 
@@ -253,7 +254,7 @@ export default function Home() {
       </main>
 
       <footer className="border-t mt-12 py-6">
-        <div className="container px-4 sm:px-6 lg:px-8">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <p className="text-center text-sm text-muted-foreground">
             前端面试题库 · 持续更新中
           </p>
