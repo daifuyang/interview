@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { Difficulty } from "@/lib/generated/prisma/client";
+import { verifyToken } from "@/lib/auth";
 
 export async function GET(
   request: NextRequest,
@@ -9,6 +11,7 @@ export async function GET(
     const { id } = await params;
     const question = await prisma.question.findUnique({
       where: { id },
+      include: { category: true },
     });
 
     if (!question) {
@@ -33,13 +36,43 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const token = request.headers.get("authorization")?.replace("Bearer ", "");
+    const decoded = verifyToken(token || "");
+    
     const { id } = await params;
     const body = await request.json();
-    const { isFavorite } = body;
+
+    // 如果没有 token，只允许更新 isFavorite
+    if (!decoded) {
+      const { isFavorite } = body;
+      if (isFavorite === undefined) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      }
+      
+      const question = await prisma.question.update({
+        where: { id },
+        data: { isFavorite },
+        include: { category: true },
+      });
+      return NextResponse.json(question);
+    }
+
+    // 管理员可以更新所有字段
+    const { title, content, answer, categoryId, difficulty, tags, isFavorite } = body;
+    
+    const data: any = {};
+    if (title !== undefined) data.title = title;
+    if (content !== undefined) data.content = content;
+    if (answer !== undefined) data.answer = answer;
+    if (categoryId !== undefined) data.categoryId = categoryId;
+    if (difficulty !== undefined) data.difficulty = difficulty as Difficulty;
+    if (tags !== undefined) data.tags = tags?.join(",") || "";
+    if (isFavorite !== undefined) data.isFavorite = isFavorite;
 
     const question = await prisma.question.update({
       where: { id },
-      data: { isFavorite },
+      data,
+      include: { category: true },
     });
 
     return NextResponse.json(question);
@@ -57,10 +90,13 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const token = request.headers.get("authorization")?.replace("Bearer ", "");
+    if (!token || !verifyToken(token)) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { id } = await params;
-    await prisma.question.delete({
-      where: { id },
-    });
+    await prisma.question.delete({ where: { id } });
 
     return NextResponse.json({ success: true });
   } catch (error) {

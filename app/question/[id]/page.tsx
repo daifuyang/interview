@@ -7,7 +7,6 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Header } from "@/components/header";
 import {
-  categoryLabels,
   difficultyLabels,
   difficultyColors,
   fetchQuestion,
@@ -111,7 +110,7 @@ export default function QuestionDetailPage() {
                 <div className="flex-1">
                   <div className="flex flex-wrap items-center gap-2 mb-3">
                     <Badge variant="secondary">
-                      {categoryLabels[question.category]}
+                      {question.category.label}
                     </Badge>
                     <Badge
                       variant="outline"
@@ -146,9 +145,10 @@ export default function QuestionDetailPage() {
 
               <div className="prose prose-sm dark:prose-invert max-w-none mb-8">
                 <h3 className="text-base font-semibold mb-3">题目描述</h3>
-                <p className="text-muted-foreground leading-relaxed">
-                  {question.content}
-                </p>
+                <div
+                  className="text-muted-foreground leading-relaxed"
+                  dangerouslySetInnerHTML={{ __html: question.content }}
+                />
               </div>
 
               {question.tags && (
@@ -172,9 +172,7 @@ export default function QuestionDetailPage() {
                 </h3>
                 <div
                   className="text-sm leading-relaxed space-y-4"
-                  dangerouslySetInnerHTML={{
-                    __html: formatAnswer(question.answer),
-                  }}
+                  dangerouslySetInnerHTML={{ __html: question.answer }}
                 />
               </div>
 
@@ -190,14 +188,4 @@ export default function QuestionDetailPage() {
       </main>
     </div>
   );
-}
-
-function formatAnswer(answer: string): string {
-  return answer
-    .replace(/## (.*)/g, '<h3 class="text-base font-semibold mt-6 mb-3">$1</h3>')
-    .replace(/### (.*)/g, '<h4 class="text-sm font-medium mt-4 mb-2">$1</h4>')
-    .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
-    .replace(/`(.*?)`/g, '<code class="bg-muted px-1.5 py-0.5 rounded text-xs font-mono">$1</code>')
-    .replace(/```(\w+)?\n([\s\S]*?)```/g, '<pre class="bg-muted p-4 rounded-lg overflow-x-auto my-4"><code class="text-xs font-mono block">$2</code></pre>')
-    .replace(/\n/g, "<br />");
 }

@@ -6,7 +6,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Question,
-  categoryLabels,
   difficultyLabels,
   difficultyColors,
 } from "@/lib/api";
@@ -33,7 +32,7 @@ export function QuestionCard({
           <div className="flex-1 min-w-0">
             <div className="flex flex-wrap items-center gap-2 mb-2">
               <Badge variant="secondary" className="text-xs font-medium">
-                {categoryLabels[question.category]}
+                {question.category.label}
               </Badge>
               <Badge
                 variant="outline"

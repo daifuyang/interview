@@ -11,24 +11,23 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  Category,
   Difficulty,
-  categoryLabels,
   difficultyLabels,
-  getCategories,
   getDifficulties,
+  Category,
 } from "@/lib/api";
 
 interface SearchFilterProps {
   searchQuery: string;
   onSearchChange: (value: string) => void;
-  selectedCategory: Category | "all";
-  onCategoryChange: (value: Category | "all") => void;
+  selectedCategory: string;
+  onCategoryChange: (value: string) => void;
   selectedDifficulty: Difficulty | "all";
   onDifficultyChange: (value: Difficulty | "all") => void;
   favoritesOnly: boolean;
   onFavoritesOnlyChange: (value: boolean) => void;
   resultCount: number;
+  categories?: Category[];
 }
 
 export function SearchFilter({
@@ -41,8 +40,8 @@ export function SearchFilter({
   favoritesOnly,
   onFavoritesOnlyChange,
   resultCount,
+  categories = [],
 }: SearchFilterProps) {
-  const categories = getCategories();
   const difficulties = getDifficulties();
 
   const hasActiveFilters =
@@ -81,7 +80,7 @@ export function SearchFilter({
         <div className="flex gap-2">
           <Select
             value={selectedCategory}
-            onValueChange={(value) => onCategoryChange(value as Category | "all")}
+            onValueChange={(value) => onCategoryChange(value)}
           >
             <SelectTrigger className="w-[130px] sm:w-[140px] h-10">
               <SelectValue placeholder="分类" />
@@ -89,8 +88,8 @@ export function SearchFilter({
             <SelectContent>
               <SelectItem value="all">全部分类</SelectItem>
               {categories.map((cat) => (
-                <SelectItem key={cat} value={cat}>
-                  {categoryLabels[cat]}
+                <SelectItem key={cat.id} value={cat.name}>
+                  {cat.label}
                 </SelectItem>
               ))}
             </SelectContent>

@@ -11,7 +11,6 @@ import {
 } from "@/components/ui/drawer";
 import {
   Question,
-  categoryLabels,
   difficultyLabels,
   difficultyColors,
 } from "@/lib/api";
@@ -43,7 +42,7 @@ export function QuestionDetailDrawer({
             <div className="flex-1 min-w-0">
               <div className="flex flex-wrap items-center gap-2 mb-2">
                 <Badge variant="secondary" className="text-xs">
-                  {categoryLabels[question.category]}
+                  {question.category.label}
                 </Badge>
                 <Badge
                   variant="outline"
@@ -85,9 +84,10 @@ export function QuestionDetailDrawer({
         <div className="px-6 py-6 overflow-y-auto flex-1">
           <div className="prose prose-sm dark:prose-invert max-w-none mb-6">
             <h4 className="text-sm font-semibold mb-2">题目描述</h4>
-            <p className="text-muted-foreground leading-relaxed text-sm">
-              {question.content}
-            </p>
+            <div
+              className="text-muted-foreground leading-relaxed text-sm"
+              dangerouslySetInnerHTML={{ __html: question.content }}
+            />
           </div>
 
           {question.tags && (
@@ -111,9 +111,7 @@ export function QuestionDetailDrawer({
             </h4>
             <div
               className="text-sm leading-relaxed space-y-3"
-              dangerouslySetInnerHTML={{
-                __html: formatAnswer(question.answer),
-              }}
+              dangerouslySetInnerHTML={{ __html: question.answer }}
             />
           </div>
         </div>
@@ -140,14 +138,4 @@ export function QuestionDetailDrawer({
       </DrawerContent>
     </Drawer>
   );
-}
-
-function formatAnswer(answer: string): string {
-  return answer
-    .replace(/## (.*)/g, '<h3 class="text-sm font-semibold mt-4 mb-2">$1</h3>')
-    .replace(/### (.*)/g, '<h4 class="text-xs font-medium mt-3 mb-1.5">$1</h4>')
-    .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
-    .replace(/`(.*?)`/g, '<code class="bg-muted px-1 py-0.5 rounded text-xs font-mono">$1</code>')
-    .replace(/```(\w+)?\n([\s\S]*?)```/g, '<pre class="bg-muted p-3 rounded-lg overflow-x-auto my-3"><code class="text-xs font-mono block">$2</code></pre>')
-    .replace(/\n/g, "<br />");
 }

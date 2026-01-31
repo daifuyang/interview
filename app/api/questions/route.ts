@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { Category, Difficulty, Prisma } from "@/lib/generated/prisma/client";
+import { Difficulty, Prisma } from "@/lib/generated/prisma/client";
+import { verifyToken } from "@/lib/auth";
 
 export async function GET(request: NextRequest) {
   try {
@@ -13,7 +14,7 @@ export async function GET(request: NextRequest) {
     const where: Prisma.QuestionWhereInput = {};
 
     if (category && category !== "all") {
-      where.category = category as Category;
+      where.category = { name: category };
     }
 
     if (difficulty && difficulty !== "all") {
@@ -34,6 +35,7 @@ export async function GET(request: NextRequest) {
 
     const questions = await prisma.question.findMany({
       where,
+      include: { category: true },
       orderBy: { createdAt: "desc" },
     });
 
@@ -49,18 +51,24 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const token = request.headers.get("authorization")?.replace("Bearer ", "");
+    if (!token || !verifyToken(token)) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const body = await request.json();
-    const { title, content, answer, category, difficulty, tags } = body;
+    const { title, content, answer, categoryId, difficulty, tags } = body;
 
     const question = await prisma.question.create({
       data: {
         title,
         content,
         answer,
-        category: category as Category,
+        categoryId,
         difficulty: difficulty as Difficulty,
         tags: tags?.join(",") || "",
       },
+      include: { category: true },
     });
 
     return NextResponse.json(question, { status: 201 });

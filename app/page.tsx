@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Header } from "@/components/header";
 import { CategoryNav } from "@/components/category-nav";
 import { SearchFilter } from "@/components/search-filter";
@@ -12,29 +12,39 @@ import {
   Category,
   Difficulty,
   fetchQuestions,
+  fetchCategories,
   toggleFavorite,
-  getCategories,
 } from "@/lib/api";
 
 export default function Home() {
   const [questions, setQuestions] = useState<Question[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<Category | "all">(
-    "all",
-  );
-  const [selectedDifficulty, setSelectedDifficulty] = useState<
-    Difficulty | "all"
-  >("all");
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty | "all">("all");
   const [favoritesOnly, setFavoritesOnly] = useState(false);
 
   const [previewQuestion, setPreviewQuestion] = useState<Question | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   useEffect(() => {
+    loadCategories();
+  }, []);
+
+  useEffect(() => {
     loadQuestions();
   }, [selectedCategory, selectedDifficulty, searchQuery, favoritesOnly]);
+
+  async function loadCategories() {
+    try {
+      const data = await fetchCategories();
+      setCategories(data);
+    } catch (error) {
+      console.error("Failed to load categories:", error);
+    }
+  }
 
   async function loadQuestions() {
     try {
@@ -53,13 +63,11 @@ export default function Home() {
     }
   }
 
-  const categories = useMemo(() => getCategories(), []);
-
-  const getCategoryCount = (category: Category | "all"): number => {
-    if (category === "all") {
+  const getCategoryCount = (categoryName: string): number => {
+    if (categoryName === "all") {
       return questions.length;
     }
-    return questions.filter((q) => q.category === category).length;
+    return questions.filter((q) => q.category.name === categoryName).length;
   };
 
   const handleToggleFavorite = async (id: string) => {
