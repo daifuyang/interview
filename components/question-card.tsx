@@ -1,6 +1,6 @@
 "use client";
 
-import { Heart, Tag, Eye, ExternalLink, Calendar } from "lucide-react";
+import { Heart, Tag, Eye, ExternalLink, Calendar, Edit, Trash2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -14,14 +14,20 @@ import Link from "next/link";
 
 interface QuestionCardProps {
   question: Question;
+  isAdmin: boolean;
   onToggleFavorite: (id: string) => void;
   onPreview: (question: Question) => void;
+  onEdit?: (question: Question) => void;
+  onDelete?: (id: string) => void;
 }
 
 export function QuestionCard({
   question,
+  isAdmin,
   onToggleFavorite,
   onPreview,
+  onEdit,
+  onDelete,
 }: QuestionCardProps) {
   const formattedDate = new Date(question.createdAt).toLocaleDateString("zh-CN");
 
@@ -48,30 +54,52 @@ export function QuestionCard({
               {question.title}
             </CardTitle>
           </div>
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            onClick={() => onToggleFavorite(question.id)}
-            className={cn(
-              "shrink-0 transition-colors",
-              question.isFavorite
-                ? "text-rose-500 hover:text-rose-600"
-                : "text-muted-foreground hover:text-rose-500"
-            )}
-          >
-            <Heart
+          <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              onClick={() => onToggleFavorite(question.id)}
               className={cn(
-                "size-4 sm:size-5 transition-all",
-                question.isFavorite && "fill-current scale-110"
+                "shrink-0 transition-colors",
+                question.isFavorite
+                  ? "text-rose-500 hover:text-rose-600"
+                  : "text-muted-foreground hover:text-rose-500"
               )}
-            />
-          </Button>
+            >
+              <Heart
+                className={cn(
+                  "size-4 sm:size-5 transition-all",
+                  question.isFavorite && "fill-current scale-110"
+                )}
+              />
+            </Button>
+            {isAdmin && (
+              <>
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  onClick={() => onEdit?.(question)}
+                  className="text-muted-foreground hover:text-primary"
+                >
+                  <Edit className="size-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  onClick={() => onDelete?.(question.id)}
+                  className="text-muted-foreground hover:text-destructive"
+                >
+                  <Trash2 className="size-4" />
+                </Button>
+              </>
+            )}
+          </div>
         </div>
       </CardHeader>
 
       <CardContent className="pt-0">
         <p className="text-sm text-muted-foreground mb-4 leading-relaxed line-clamp-2">
-          {question.content}
+          {question.content.replace(/<[^>]*>/g, "")}
         </p>
 
         {question.tags && (

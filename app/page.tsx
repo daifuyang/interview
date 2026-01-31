@@ -7,19 +7,28 @@ import { SearchFilter } from "@/components/search-filter";
 import { QuestionCard } from "@/components/question-card";
 import { EmptyState } from "@/components/empty-state";
 import { QuestionDetailDrawer } from "@/components/question-detail-drawer";
+import { LoginModal } from "@/components/login-modal";
+import { QuestionFormModal } from "@/components/question-form-modal";
+import { CategoryManageModal } from "@/components/category-manage-modal";
 import {
   Question,
   Category,
   Difficulty,
+  Admin,
   fetchQuestions,
   fetchCategories,
   toggleFavorite,
+  deleteQuestion,
+  getAdminToken,
+  verifyAdminToken,
 } from "@/lib/api";
 
 export default function Home() {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [admin, setAdmin] = useState<Admin | null>(null);
+  const [adminToken, setAdminToken] = useState<string>("");
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
@@ -28,6 +37,27 @@ export default function Home() {
 
   const [previewQuestion, setPreviewQuestion] = useState<Question | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [isQuestionFormOpen, setIsQuestionFormOpen] = useState(false);
+  const [isCategoryManageOpen, setIsCategoryManageOpen] = useState(false);
+  const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
+
+  // 检查登录状态
+  useEffect(() => {
+    const checkAuth = async () => {
+      const token = getAdminToken();
+      if (token) {
+        try {
+          const adminData = await verifyAdminToken(token);
+          setAdmin(adminData);
+          setAdminToken(token);
+        } catch {
+          // token 无效，忽略
+        }
+      }
+    };
+    checkAuth();
+  }, []);
 
   useEffect(() => {
     loadCategories();
@@ -62,6 +92,37 @@ export default function Home() {
       setIsLoading(false);
     }
   }
+
+  const handleLogin = (adminData: Admin, token: string) => {
+    setAdmin(adminData);
+    setAdminToken(token);
+  };
+
+  const handleLogout = () => {
+    setAdmin(null);
+    setAdminToken("");
+  };
+
+  const handleAddQuestion = () => {
+    setEditingQuestion(null);
+    setIsQuestionFormOpen(true);
+  };
+
+  const handleEditQuestion = (question: Question) => {
+    setEditingQuestion(question);
+    setIsQuestionFormOpen(true);
+  };
+
+  const handleDeleteQuestion = async (id: string) => {
+    if (!confirm("确定要删除这道题吗？")) return;
+    try {
+      await deleteQuestion(id, adminToken);
+      loadQuestions();
+    } catch (error) {
+      console.error("Failed to delete question:", error);
+      alert("删除失败");
+    }
+  };
 
   const getCategoryCount = (categoryName: string): number => {
     if (categoryName === "all") {
@@ -116,7 +177,13 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
+      <Header
+        admin={admin}
+        onLoginClick={() => setIsLoginModalOpen(true)}
+        onLogout={handleLogout}
+        onAddQuestion={handleAddQuestion}
+        onManageCategories={() => setIsCategoryManageOpen(true)}
+      />
 
       <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
         <div className="max-w-4xl mx-auto">
@@ -149,6 +216,7 @@ export default function Home() {
               favoritesOnly={favoritesOnly}
               onFavoritesOnlyChange={setFavoritesOnly}
               resultCount={questions.length}
+              categories={categories}
             />
           </div>
 
@@ -167,8 +235,11 @@ export default function Home() {
                 <QuestionCard
                   key={question.id}
                   question={question}
+                  isAdmin={!!admin}
                   onToggleFavorite={handleToggleFavorite}
                   onPreview={handlePreview}
+                  onEdit={handleEditQuestion}
+                  onDelete={handleDeleteQuestion}
                 />
               ))}
             </div>
@@ -195,6 +266,36 @@ export default function Home() {
         onClose={handleCloseDrawer}
         onToggleFavorite={handleToggleFavorite}
       />
+
+      <LoginModal
+        isOpen={isLoginModalOpen}
+        onClose={() => setIsLoginModalOpen(false)}
+        onLogin={(adminData) => {
+          const token = getAdminToken() || "";
+          handleLogin(adminData, token);
+        }}
+      />
+
+      {admin && (
+        <>
+          <QuestionFormModal
+            isOpen={isQuestionFormOpen}
+            onClose={() => setIsQuestionFormOpen(false)}
+            question={editingQuestion}
+            categories={categories}
+            token={adminToken}
+            onSuccess={loadQuestions}
+          />
+
+          <CategoryManageModal
+            isOpen={isCategoryManageOpen}
+            onClose={() => setIsCategoryManageOpen(false)}
+            categories={categories}
+            token={adminToken}
+            onSuccess={loadCategories}
+          />
+        </>
+      )}
     </div>
   );
 }

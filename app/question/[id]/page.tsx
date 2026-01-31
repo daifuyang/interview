@@ -5,7 +5,7 @@ import { ArrowLeft, Heart, Tag, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Header } from "@/components/header";
+import { SimpleHeader } from "@/components/simple-header";
 import {
   difficultyLabels,
   difficultyColors,
@@ -53,7 +53,7 @@ export default function QuestionDetailPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background">
-        <Header />
+        <SimpleHeader />
         <main className="container mx-auto px-4 py-8">
           <div className="max-w-3xl mx-auto">
             <div className="animate-pulse space-y-4">
@@ -70,7 +70,7 @@ export default function QuestionDetailPage() {
   if (!question) {
     return (
       <div className="min-h-screen bg-background">
-        <Header />
+        <SimpleHeader />
         <main className="container mx-auto px-4 py-8">
           <div className="max-w-3xl mx-auto text-center py-16">
             <h1 className="text-2xl font-bold mb-4">题目未找到</h1>
@@ -91,7 +91,7 @@ export default function QuestionDetailPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
+      <SimpleHeader />
       <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
         <div className="max-w-3xl mx-auto">
           <Button
