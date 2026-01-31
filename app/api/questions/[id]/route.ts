@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { Difficulty } from "@/lib/generated/prisma/client";
+import { Difficulty, Prisma } from "@/lib/generated/prisma/client";
 import { verifyToken } from "@/lib/auth";
 
 export async function GET(
@@ -60,11 +60,11 @@ export async function PATCH(
     // 管理员可以更新所有字段
     const { title, content, answer, categoryId, difficulty, tags, isFavorite } = body;
     
-    const data: any = {};
+    const data: Prisma.QuestionUpdateInput = {};
     if (title !== undefined) data.title = title;
     if (content !== undefined) data.content = content;
     if (answer !== undefined) data.answer = answer;
-    if (categoryId !== undefined) data.categoryId = categoryId;
+    if (categoryId !== undefined) data.category = { connect: { id: categoryId } };
     if (difficulty !== undefined) data.difficulty = difficulty as Difficulty;
     if (tags !== undefined) data.tags = tags?.join(",") || "";
     if (isFavorite !== undefined) data.isFavorite = isFavorite;

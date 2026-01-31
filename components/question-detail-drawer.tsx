@@ -36,7 +36,7 @@ export function QuestionDetailDrawer({
 
   return (
     <Drawer open={isOpen} onOpenChange={onClose} direction="right">
-      <DrawerContent className="w-full sm:max-w-2xl">
+      <DrawerContent className="w-full data-[vaul-drawer-direction=right]:sm:max-w-3xl">
         <DrawerHeader className="border-b pb-4">
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1 min-w-0">

@@ -114,7 +114,12 @@ export function QuestionFormModal({
           <DialogTitle>{isEditing ? "编辑题目" : "新增题目"}</DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-6 mt-4">
+        <form onSubmit={handleSubmit} className="space-y-6 mt-4" onKeyDown={(e) => {
+          // 阻止回车键自动提交表单（textarea 除外）
+          if (e.key === "Enter" && e.target instanceof HTMLInputElement) {
+            e.preventDefault();
+          }
+        }}>
           {error && (
             <div className="text-sm text-destructive bg-destructive/10 p-3 rounded">
               {error}

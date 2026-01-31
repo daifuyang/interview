@@ -33,13 +33,22 @@ export function TipTapEditor({
 }: TipTapEditorProps) {
   const editor = useEditor({
     extensions: [
-      StarterKit,
+      StarterKit.configure({
+        heading: {
+          levels: [1, 2, 3],
+        },
+      }),
       Placeholder.configure({
         placeholder,
       }),
     ],
     content,
     immediatelyRender: false,
+    editorProps: {
+      attributes: {
+        class: "prose prose-sm dark:prose-invert max-w-none focus:outline-none min-h-full h-full",
+      },
+    },
     onUpdate: ({ editor }) => {
       onChange(editor.getHTML());
     },
@@ -50,9 +59,10 @@ export function TipTapEditor({
   }
 
   return (
-    <div className={cn("border rounded-lg overflow-hidden", className)}>
-      <div className="flex flex-wrap items-center gap-1 p-2 border-b bg-muted/50">
+    <div className={cn("border rounded-lg overflow-hidden flex flex-col", className)}>
+      <div className="flex flex-wrap items-center gap-1 p-2 border-b bg-muted/50 shrink-0">
         <Button
+          type="button"
           variant="ghost"
           size="icon-xs"
           onClick={() => editor.chain().focus().toggleBold().run()}
@@ -64,6 +74,7 @@ export function TipTapEditor({
           <Bold className="size-4" />
         </Button>
         <Button
+          type="button"
           variant="ghost"
           size="icon-xs"
           onClick={() => editor.chain().focus().toggleItalic().run()}
@@ -76,6 +87,7 @@ export function TipTapEditor({
         </Button>
         <div className="w-px h-4 bg-border mx-1" />
         <Button
+          type="button"
           variant="ghost"
           size="icon-xs"
           onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
@@ -87,6 +99,7 @@ export function TipTapEditor({
           <Heading1 className="size-4" />
         </Button>
         <Button
+          type="button"
           variant="ghost"
           size="icon-xs"
           onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
@@ -99,6 +112,7 @@ export function TipTapEditor({
         </Button>
         <div className="w-px h-4 bg-border mx-1" />
         <Button
+          type="button"
           variant="ghost"
           size="icon-xs"
           onClick={() => editor.chain().focus().toggleBulletList().run()}
@@ -110,6 +124,7 @@ export function TipTapEditor({
           <List className="size-4" />
         </Button>
         <Button
+          type="button"
           variant="ghost"
           size="icon-xs"
           onClick={() => editor.chain().focus().toggleOrderedList().run()}
@@ -122,6 +137,7 @@ export function TipTapEditor({
         </Button>
         <div className="w-px h-4 bg-border mx-1" />
         <Button
+          type="button"
           variant="ghost"
           size="icon-xs"
           onClick={() => editor.chain().focus().toggleBlockquote().run()}
@@ -133,6 +149,7 @@ export function TipTapEditor({
           <Quote className="size-4" />
         </Button>
         <Button
+          type="button"
           variant="ghost"
           size="icon-xs"
           onClick={() => editor.chain().focus().toggleCode().run()}
@@ -145,6 +162,7 @@ export function TipTapEditor({
         </Button>
         <div className="flex-1" />
         <Button
+          type="button"
           variant="ghost"
           size="icon-xs"
           onClick={() => editor.chain().focus().undo().run()}
@@ -154,6 +172,7 @@ export function TipTapEditor({
           <Undo className="size-4" />
         </Button>
         <Button
+          type="button"
           variant="ghost"
           size="icon-xs"
           onClick={() => editor.chain().focus().redo().run()}
@@ -163,10 +182,9 @@ export function TipTapEditor({
           <Redo className="size-4" />
         </Button>
       </div>
-      <EditorContent
-        editor={editor}
-        className="prose prose-sm dark:prose-invert max-w-none p-4 min-h-[200px] focus:outline-none"
-      />
+      <div className="flex-1 overflow-y-auto p-4">
+        <EditorContent editor={editor} className="h-full" />
+      </div>
     </div>
   );
 }

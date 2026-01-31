@@ -7,9 +7,11 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "db:init": "npx prisma migrate dev --name init",
+    "db:migrate": "npx prisma migrate dev --name init",
     "db:generate": "npx prisma generate",
-    "db:seed": "npx tsx scripts/seed.ts"
+    "db:seed": "npx tsx scripts/seed.ts",
+    "db:reset": "npx prisma migrate reset",
+    "db:init": "npm run db:reset && npm run db:migrate && npm run db:generate && npm run db:seed"
   },
   "dependencies": {
     "@base-ui/react": "^1.0.0",
