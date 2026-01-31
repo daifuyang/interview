@@ -7,41 +7,51 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Header } from "@/components/header";
 import {
-  Question,
   categoryLabels,
   difficultyLabels,
   difficultyColors,
-  getQuestions,
-  saveQuestions,
-} from "@/lib/data";
-import { useState } from "react";
+  fetchQuestion,
+  toggleFavorite,
+  Question,
+} from "@/lib/api";
+import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 
 export default function QuestionDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const [question, setQuestion] = useState<Question | null>(() => {
-    if (typeof window !== "undefined") {
-      const questions = getQuestions();
-      return questions.find((q) => q.id === params.id) || null;
-    }
-    return null;
-  });
-  const isLoaded = true;
+  const [question, setQuestion] = useState<Question | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const handleToggleFavorite = () => {
+  useEffect(() => {
+    loadQuestion();
+  }, [params.id]);
+
+  async function loadQuestion() {
+    try {
+      setIsLoading(true);
+      const data = await fetchQuestion(params.id as string);
+      setQuestion(data);
+    } catch (error) {
+      console.error("Failed to load question:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  const handleToggleFavorite = async () => {
     if (!question) return;
-    const questions = getQuestions();
-    const updated = questions.map((q) =>
-      q.id === question.id ? { ...q, isFavorite: !q.isFavorite } : q
-    );
-    saveQuestions(updated);
-    setQuestion((prev) =>
-      prev ? { ...prev, isFavorite: !prev.isFavorite } : null
-    );
+    try {
+      await toggleFavorite(question.id, !question.isFavorite);
+      setQuestion((prev) =>
+        prev ? { ...prev, isFavorite: !prev.isFavorite } : null
+      );
+    } catch (error) {
+      console.error("Failed to toggle favorite:", error);
+    }
   };
 
-  if (!isLoaded) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-background">
         <Header />
@@ -77,6 +87,8 @@ export default function QuestionDetailPage() {
       </div>
     );
   }
+
+  const formattedDate = new Date(question.createdAt).toLocaleDateString("zh-CN");
 
   return (
     <div className="min-h-screen bg-background">
@@ -139,15 +151,15 @@ export default function QuestionDetailPage() {
                 </p>
               </div>
 
-              {question.tags.length > 0 && (
+              {question.tags && (
                 <div className="flex flex-wrap items-center gap-2 mb-8 pb-6 border-b">
                   <Tag className="size-4 text-muted-foreground" />
-                  {question.tags.map((tag) => (
+                  {question.tags.split(",").filter(Boolean).map((tag) => (
                     <span
                       key={tag}
                       className="text-sm text-muted-foreground bg-muted px-2.5 py-1 rounded-full"
                     >
-                      {tag}
+                      {tag.trim()}
                     </span>
                   ))}
                 </div>
@@ -169,7 +181,7 @@ export default function QuestionDetailPage() {
               <div className="mt-8 pt-6 border-t flex items-center gap-4 text-xs text-muted-foreground">
                 <div className="flex items-center gap-1">
                   <Calendar className="size-3.5" />
-                  <span>创建于 {question.createdAt}</span>
+                  <span>创建于 {formattedDate}</span>
                 </div>
               </div>
             </CardContent>

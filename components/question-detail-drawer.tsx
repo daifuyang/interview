@@ -14,7 +14,7 @@ import {
   categoryLabels,
   difficultyLabels,
   difficultyColors,
-} from "@/lib/data";
+} from "@/lib/api";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 
@@ -33,9 +33,11 @@ export function QuestionDetailDrawer({
 }: QuestionDetailDrawerProps) {
   if (!question) return null;
 
+  const formattedDate = new Date(question.createdAt).toLocaleDateString("zh-CN");
+
   return (
     <Drawer open={isOpen} onOpenChange={onClose} direction="right">
-      <DrawerContent className="data-[vaul-drawer-direction=right]:sm:max-w-3xl">
+      <DrawerContent className="w-full sm:max-w-2xl">
         <DrawerHeader className="border-b pb-4">
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1 min-w-0">
@@ -80,7 +82,7 @@ export function QuestionDetailDrawer({
           </div>
         </DrawerHeader>
 
-        <div className="px-4 py-4 overflow-y-auto flex-1">
+        <div className="px-6 py-6 overflow-y-auto flex-1">
           <div className="prose prose-sm dark:prose-invert max-w-none mb-6">
             <h4 className="text-sm font-semibold mb-2">题目描述</h4>
             <p className="text-muted-foreground leading-relaxed text-sm">
@@ -88,15 +90,15 @@ export function QuestionDetailDrawer({
             </p>
           </div>
 
-          {question.tags.length > 0 && (
+          {question.tags && (
             <div className="flex flex-wrap items-center gap-2 mb-6 pb-4 border-b">
               <Tag className="size-3.5 text-muted-foreground" />
-              {question.tags.map((tag) => (
+              {question.tags.split(",").filter(Boolean).map((tag) => (
                 <span
                   key={tag}
                   className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full"
                 >
-                  {tag}
+                  {tag.trim()}
                 </span>
               ))}
             </div>
@@ -114,18 +116,25 @@ export function QuestionDetailDrawer({
               }}
             />
           </div>
+        </div>
 
-          <div className="mt-6 pt-4 border-t flex items-center justify-between">
-            <div className="flex items-center gap-1 text-xs text-muted-foreground">
-              <Calendar className="size-3" />
-              <span>{question.createdAt}</span>
+        <div className="px-6 py-4 border-t bg-muted/30">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <Calendar className="size-3.5" />
+              <span>创建于 {formattedDate}</span>
             </div>
-            <Button variant="outline" size="sm" asChild>
-              <Link href={`/question/${question.id}`} onClick={onClose}>
-                <ExternalLink className="size-3.5 mr-1.5" />
-                新页面打开
-              </Link>
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={onClose}>
+                关闭
+              </Button>
+              <Button variant="default" size="sm" asChild>
+                <Link href={`/question/${question.id}`} onClick={onClose}>
+                  <ExternalLink className="size-3.5 mr-1.5" />
+                  新页面打开
+                </Link>
+              </Button>
+            </div>
           </div>
         </div>
       </DrawerContent>

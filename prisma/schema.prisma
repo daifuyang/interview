@@ -1,0 +1,47 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+enum Difficulty {
+  easy
+  medium
+  hard
+}
+
+enum Category {
+  javascript
+  typescript
+  react
+  vue
+  css
+  html
+  browser
+  performance
+  engineering
+  algorithm
+  network
+  data_structure
+}
+
+model Question {
+  id          String     @id @default(uuid())
+  title       String
+  content     String
+  answer      String
+  category    Category
+  difficulty  Difficulty
+  tags        String     @default("")
+  isFavorite  Boolean    @default(false)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@map("questions")
+}

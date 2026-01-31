@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { Category, categoryLabels } from "@/lib/data";
+import { Category, categoryLabels } from "@/lib/api";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 
 interface CategoryNavProps {

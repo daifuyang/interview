@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect, useRef } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Header } from "@/components/header";
 import { CategoryNav } from "@/components/category-nav";
 import { SearchFilter } from "@/components/search-filter";
@@ -11,21 +11,14 @@ import {
   Question,
   Category,
   Difficulty,
-  getQuestions,
-  saveQuestions,
-  filterQuestions,
+  fetchQuestions,
   toggleFavorite,
   getCategories,
-} from "@/lib/data";
+} from "@/lib/api";
 
 export default function Home() {
-  const [questions, setQuestions] = useState<Question[]>(() => {
-    if (typeof window !== "undefined") {
-      return getQuestions();
-    }
-    return [];
-  });
-  const isLoadedRef = useRef(false);
+  const [questions, setQuestions] = useState<Question[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<Category | "all">(
@@ -40,29 +33,25 @@ export default function Home() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   useEffect(() => {
-    isLoadedRef.current = true;
-  }, []);
+    loadQuestions();
+  }, [selectedCategory, selectedDifficulty, searchQuery, favoritesOnly]);
 
-  useEffect(() => {
-    if (isLoadedRef.current) {
-      saveQuestions(questions);
+  async function loadQuestions() {
+    try {
+      setIsLoading(true);
+      const data = await fetchQuestions({
+        category: selectedCategory,
+        difficulty: selectedDifficulty,
+        search: searchQuery,
+        favoritesOnly,
+      });
+      setQuestions(data);
+    } catch (error) {
+      console.error("Failed to load questions:", error);
+    } finally {
+      setIsLoading(false);
     }
-  }, [questions]);
-
-  const filteredQuestions = useMemo(() => {
-    return filterQuestions(questions, {
-      category: selectedCategory,
-      difficulty: selectedDifficulty,
-      search: searchQuery,
-      favoritesOnly,
-    });
-  }, [
-    questions,
-    selectedCategory,
-    selectedDifficulty,
-    searchQuery,
-    favoritesOnly,
-  ]);
+  }
 
   const categories = useMemo(() => getCategories(), []);
 
@@ -73,12 +62,24 @@ export default function Home() {
     return questions.filter((q) => q.category === category).length;
   };
 
-  const handleToggleFavorite = (id: string) => {
-    setQuestions((prev) => toggleFavorite(prev, id));
-    if (previewQuestion && previewQuestion.id === id) {
-      setPreviewQuestion((prev) =>
-        prev ? { ...prev, isFavorite: !prev.isFavorite } : null,
+  const handleToggleFavorite = async (id: string) => {
+    const question = questions.find((q) => q.id === id);
+    if (!question) return;
+
+    try {
+      await toggleFavorite(id, !question.isFavorite);
+      setQuestions((prev) =>
+        prev.map((q) =>
+          q.id === id ? { ...q, isFavorite: !q.isFavorite } : q
+        )
       );
+      if (previewQuestion && previewQuestion.id === id) {
+        setPreviewQuestion((prev) =>
+          prev ? { ...prev, isFavorite: !prev.isFavorite } : null
+        );
+      }
+    } catch (error) {
+      console.error("Failed to toggle favorite:", error);
     }
   };
 
@@ -139,13 +140,22 @@ export default function Home() {
               onDifficultyChange={setSelectedDifficulty}
               favoritesOnly={favoritesOnly}
               onFavoritesOnlyChange={setFavoritesOnly}
-              resultCount={filteredQuestions.length}
+              resultCount={questions.length}
             />
           </div>
 
-          {filteredQuestions.length > 0 ? (
+          {isLoading ? (
             <div className="grid gap-4 sm:gap-6">
-              {filteredQuestions.map((question) => (
+              {[...Array(3)].map((_, i) => (
+                <div
+                  key={i}
+                  className="h-40 bg-muted rounded-xl animate-pulse"
+                />
+              ))}
+            </div>
+          ) : questions.length > 0 ? (
+            <div className="grid gap-4 sm:gap-6">
+              {questions.map((question) => (
                 <QuestionCard
                   key={question.id}
                   question={question}
@@ -164,7 +174,7 @@ export default function Home() {
       </main>
 
       <footer className="border-t mt-12 py-6">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="container px-4 sm:px-6 lg:px-8">
           <p className="text-center text-sm text-muted-foreground">
             前端面试题库 · 持续更新中
           </p>

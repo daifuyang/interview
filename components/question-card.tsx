@@ -9,7 +9,7 @@ import {
   categoryLabels,
   difficultyLabels,
   difficultyColors,
-} from "@/lib/data";
+} from "@/lib/api";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 
@@ -24,6 +24,8 @@ export function QuestionCard({
   onToggleFavorite,
   onPreview,
 }: QuestionCardProps) {
+  const formattedDate = new Date(question.createdAt).toLocaleDateString("zh-CN");
+
   return (
     <Card className="group transition-all duration-200 hover:shadow-md">
       <CardHeader className="pb-3">
@@ -73,15 +75,15 @@ export function QuestionCard({
           {question.content}
         </p>
 
-        {question.tags.length > 0 && (
+        {question.tags && (
           <div className="flex flex-wrap items-center gap-1.5 mb-4">
             <Tag className="size-3.5 text-muted-foreground" />
-            {question.tags.map((tag) => (
+            {question.tags.split(",").filter(Boolean).map((tag) => (
               <span
                 key={tag}
                 className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full"
               >
-                {tag}
+                {tag.trim()}
               </span>
             ))}
           </div>
@@ -90,7 +92,7 @@ export function QuestionCard({
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
             <Calendar className="size-3" />
-            <span>{question.createdAt}</span>
+            <span>{formattedDate}</span>
           </div>
           <div className="flex items-center gap-1.5">
             <Button

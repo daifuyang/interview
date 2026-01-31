@@ -17,7 +17,7 @@ import {
   difficultyLabels,
   getCategories,
   getDifficulties,
-} from "@/lib/data";
+} from "@/lib/api";
 
 interface SearchFilterProps {
   searchQuery: string;
