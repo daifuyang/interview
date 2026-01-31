@@ -2,7 +2,7 @@ module.exports = {
   apps: [
     {
       name: 'nextjs-interview',
-      cwd: '/root/workspace/node/interview/interview.zerocmf.com',
+      cwd: '/root/workspace/node/interview',
       // 使用 standalone 启动
       script: './.next/standalone/server.js',
       // 或者使用 node 直接运行
