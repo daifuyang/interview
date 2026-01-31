@@ -15,6 +15,17 @@ function main() {
   fs.cpSync(sourceDir, destDir, { recursive: true });
 
   console.log("静态文件复制完成");
+
+  // 复制 dev.db 数据库文件
+  const dbSource = path.join(__dirname, "../dev.db");
+  const dbDest = path.join(__dirname, "../.next/standalone/dev.db");
+
+  if (fs.existsSync(dbSource)) {
+    fs.copyFileSync(dbSource, dbDest);
+    console.log("数据库文件复制完成");
+  } else {
+    console.log("数据库文件不存在，跳过复制");
+  }
 }
 
 main();
